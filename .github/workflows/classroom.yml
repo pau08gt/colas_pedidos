@@ -1,0 +1,109 @@
+name: Autograding Tests
+
+'on':
+  - push
+  - repository_dispatch
+
+permissions:
+  checks: write
+  actions: read
+  contents: read
+
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Pruebas Comparable
+        id: comparable
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: Comparable AlertaSeguridad
+          setup-command: ''
+          command: mvn -B -Dtest=AlertaComparableTest test
+          timeout: 10
+          max-score: 20
+
+      - name: Pruebas esContrasenaSegura
+        id: contrasena-segura
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: esContrasenaSegura
+          setup-command: ''
+          command: mvn -B -Dtest=GestorContrasenaSeguraTest test
+          timeout: 10
+          max-score: 15
+
+      - name: Pruebas calcularRiesgo
+        id: calcular-riesgo
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: calcularRiesgo
+          setup-command: ''
+          command: mvn -B -Dtest=GestorCalcularRiesgoTest test
+          timeout: 10
+          max-score: 20
+
+      - name: Pruebas registrarAlerta
+        id: registrar-alerta
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: registrarAlerta
+          setup-command: ''
+          command: mvn -B -Dtest=GestorRegistrarAlertaTest test
+          timeout: 10
+          max-score: 15
+
+      - name: Pruebas existeUsuario
+        id: existe-usuario
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: existeUsuario
+          setup-command: ''
+          command: mvn -B -Dtest=GestorExisteUsuarioTest test
+          timeout: 10
+          max-score: 10
+
+      - name: Pruebas consultar y atender
+        id: consultar-atender
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: consultarAtenderPrioridad
+          setup-command: ''
+          command: mvn -B -Dtest=GestorConsultarAtenderTest test
+          timeout: 10
+          max-score: 15
+
+      - name: Pruebas listarAlertasOrdenadas
+        id: listar-alertas
+        uses: classroom-resources/autograding-command-grader@v1
+        with:
+          test-name: listarAlertasOrdenadas
+          setup-command: ''
+          command: mvn -B -Dtest=GestorListarAlertasTest test
+          timeout: 10
+          max-score: 10
+
+      - name: Autograding Reporter
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          COMPARABLE_RESULTS: "${{ steps.comparable.outputs.result }}"
+          CONTRASENA-SEGURA_RESULTS: "${{ steps.contrasena-segura.outputs.result }}"
+          CALCULAR-RIESGO_RESULTS: "${{ steps.calcular-riesgo.outputs.result }}"
+          REGISTRAR-ALERTA_RESULTS: "${{ steps.registrar-alerta.outputs.result }}"
+          EXISTE-USUARIO_RESULTS: "${{ steps.existe-usuario.outputs.result }}"
+          CONSULTAR-ATENDER_RESULTS: "${{ steps.consultar-atender.outputs.result }}"
+          LISTAR-ALERTAS_RESULTS: "${{ steps.listar-alertas.outputs.result }}"
+        with:
+          runners: comparable,contrasena-segura,calcular-riesgo,registrar-alerta,existe-usuario,consultar-atender,listar-alertas
